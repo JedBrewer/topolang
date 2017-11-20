@@ -4,6 +4,7 @@
 # TODO: add BaseDAFSA.load_incr method to use add_word to incrementally construct minimal DAFSA
 
 # TODO: add BaseDFSA methods for structural exposition
+from typing import Optional
 
 
 class BaseDAFSA:
@@ -34,6 +35,12 @@ class BaseDAFSA:
         # TODO: Write BaseDAFSA._State.remove_transition
         @staticmethod
         def remove_transition(state_from, symbol, state_to):
+            ...
+
+        # TODO: Override BaseDAFSA._State.__eq__
+        # To be used for determining state equivalency
+        # Precondition: all children of both states must be registered already
+        def __eq__(self, other):
             ...
 
     def __init__(self):
@@ -110,6 +117,9 @@ class BaseDAFSA:
 
         self._current_state.is_final = True
 
-    # TODO: Write BaseDAFSA._find_equivalent
-    def _find_equivalent(self, p: _State) -> _State:
-        ...
+    def _find_equivalent(self, p: _State) -> Optional[_State]:
+        for q in self._register:
+            if q == p:
+                return q
+
+        return None
