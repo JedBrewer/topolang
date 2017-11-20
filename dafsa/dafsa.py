@@ -21,11 +21,18 @@ class BaseDAFSA:
         def __eq__(self, other):
             return self.__str__() == str(other)
 
+        # Should represent itself as a concatenation of each of the
+        # 3 byte ID of its children along with their associated transition symbol
         def __str__(self):
             ...
 
+        # Note: equivalent states will hash to same bucket (maybe useful?)
         def __hash__(self):
-            self.__str__().__hash__()
+            return self.__str__().__hash__()
+
+        # 3 byte ID of state
+        def _id(self):
+            ...
 
     def __init__(self):
         self._initial_state = BaseDAFSA._State()
