@@ -12,7 +12,6 @@ class BaseDAFSA:
 
         def __init__(self):
             self.is_final = False
-            # TODO: Adjust code to keep track of BaseDAFSA._State.children
             self.children = []
 
         def apply(self, symbol):
@@ -32,7 +31,7 @@ class BaseDAFSA:
 
             BaseDAFSA._State._transitions[(state_from, symbol)] = state_to
 
-        # TODO: Write BaseDAFSA._find_equivalent
+        # TODO: Write BaseDAFSA._State.remove_transition
         @staticmethod
         def remove_transition(state_from, symbol, state_to):
             ...
@@ -106,6 +105,7 @@ class BaseDAFSA:
         for c in suffix:
             new_state = BaseDAFSA._State.new()
             self._current_state.add_transition(self._current_state, c, new_state)
+            self._current_state.children.append(c)
             self._current_state = new_state
 
         self._current_state.is_final = True
