@@ -1,7 +1,13 @@
 # Default implementation of DAFSA. Will abstract later
-# TODO: modify BaseDAFSA.add_word to maintain minimal DAFSA
-# TODO: add BaseDAFSA.load method to use add_word to incrementally construct minimal DAFSA
+
+# TODO: add BaseDAFSA.load method to construct a basic trie DAFSA
+# TODO: add BaseDAFSA.minimize method to reduce an existing DAFSA to its minimal equivalent
+
+# TODO: add BaseDAFSA.add_word_incr to maintain minimal DAFSA
+# TODO: add BaseDAFSA.load_incr method to use add_word to incrementally construct minimal DAFSA
+
 # TODO: add BaseDFSA methods for structural exposition
+
 
 class BaseDAFSA:
     class _State:
@@ -9,13 +15,12 @@ class BaseDAFSA:
 
         def __init__(self):
             self.is_final = False
-            self.is_nonfinal = True
 
         def apply(self, symbol):
             return BaseDAFSA._State._transitions[(self, symbol)]
 
         @classmethod
-        def new(cls):
+        def new(cls) -> BaseDAFSA._State:
             new_state = cls.__new__(cls)
             new_state.__init__()
             return new_state
@@ -60,12 +65,6 @@ class BaseDAFSA:
         if not (word.isalpha() and word.islower()):
             raise ValueError("can only accept lower-case letters")
 
-    class Transition:
-        def __init__(self, state_from, symbol, state_to):
-            self._state_from = state_from
-            self._symbol = symbol
-            self._state_to = state_to
-
     def _follow(self, word):
         """Follows word up to preexisting prefix and returns remaining suffix"""
         if word:
@@ -78,13 +77,9 @@ class BaseDAFSA:
     # Precondition: there are no more existing paths on this suffix
     def _finish(self, suffix):
         """Adds remaining suffix to dafsa"""
-        if suffix:
-            self._current_state.is_nonfinal = True
-
         for c in suffix:
             new_state = BaseDAFSA._State.new()
             self._current_state.add_transition(self._current_state, c, new_state)
             self._current_state = new_state
 
         self._current_state.is_final = True
-        self._current_state.is_nonfinal = False
