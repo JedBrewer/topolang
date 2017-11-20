@@ -32,10 +32,15 @@ class BaseDAFSA:
 
             BaseDAFSA._State._transitions[(state_from, symbol)] = state_to
 
-        # TODO: Write BaseDAFSA._State.remove_transition
         @staticmethod
         def remove_transition(state_from, symbol, state_to):
-            ...
+            try:
+                mapped_state = BaseDAFSA._State._transitions[(state_from, symbol)]
+                if mapped_state is not state_to:
+                    raise LookupError(f"({state_from}, {symbol}) maps to {mapped_state}, not {state_to}. Cannot delete")
+                del BaseDAFSA._State._transitions[(state_from, symbol)]
+            except KeyError:
+                pass
 
         # TODO: Override BaseDAFSA._State.__eq__
         # To be used for determining state equivalency
