@@ -2,7 +2,7 @@ import unittest
 
 from .dafsa import BaseDAFSA
 
-word_test_file = "words_test.txt"
+word_test_file = "/home/jed/Develop/PycharmProjects/topolang/dafsa/words_test.txt"
 
 
 class TestDAFSAMethods(unittest.TestCase):

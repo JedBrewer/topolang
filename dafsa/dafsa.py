@@ -15,42 +15,22 @@ class BaseDAFSA:
             self.is_final = False
             self.children = []
 
-        def apply(self, symbol):
-            return BaseDAFSA._State._transitions[(self, symbol)]
-
-        @classmethod
-        def new(cls):
-            new_state = cls.__new__(cls)
-            new_state.__init__()
-            return new_state
-
-        @staticmethod
-        def add_transition(state_from, symbol, state_to):
-            # This should be changed for production, as duplicate transition keys should never be passed
-            if (state_from, symbol) in BaseDAFSA._State._transitions:
-                raise LookupError(f"transition from state {state_from} on symbol {symbol} already exists")
-
-            BaseDAFSA._State._transitions[(state_from, symbol)] = state_to
-
-        @staticmethod
-        def remove_transition(state_from, symbol, state_to):
-            try:
-                mapped_state = BaseDAFSA._State._transitions[(state_from, symbol)]
-                if mapped_state is not state_to:
-                    raise LookupError(f"({state_from}, {symbol}) maps to {mapped_state}, not {state_to}. Cannot delete")
-                del BaseDAFSA._State._transitions[(state_from, symbol)]
-            except KeyError:
-                pass
-
         # TODO: Override BaseDAFSA._State.__eq__
         # To be used for determining state equivalency
         # Precondition: all children of both states must be registered already
         def __eq__(self, other):
+            return self.__str__() == str(other)
+
+        def __str__(self):
             ...
 
+        def __hash__(self):
+            self.__str__().__hash__()
+
     def __init__(self):
-        self._initial_state = BaseDAFSA._State.new()
+        self._initial_state = BaseDAFSA._State()
         self._current_state = self._initial_state
+        self._transitions = {}
         self._register = []
 
     def add_word(self, word: str):
@@ -73,16 +53,35 @@ class BaseDAFSA:
 
     def _minimize(self, state: _State):
         for c in state.children:
-            p = state.apply(c)
+            p = self.apply(state, c)
 
             self._minimize(p)
             q = self._find_equivalent(p)
 
             if q:
-                state.remove_transition(state, c, p)
-                state.add_transition(state, c, q)
+                self.remove_transition(state, c, p)
+                self.add_transition(state, c, q)
             else:
                 self._register.append(p)
+
+    def apply(self, state: _State, c: str) -> _State:
+        return self._transitions[(state, c)]
+
+    def add_transition(self, state_from: _State, symbol: str, state_to: _State):
+        # This should be changed for production, as duplicate transition keys should never be passed
+        if (state_from, symbol) in self._transitions:
+            raise LookupError(f"transition from state {state_from} on symbol {symbol} already exists")
+
+        self._transitions[(state_from, symbol)] = state_to
+
+    def remove_transition(self, state_from: _State, symbol: str, state_to: _State):
+        try:
+            mapped_state = self._transitions[(state_from, symbol)]
+            if mapped_state is not state_to:
+                raise LookupError(f"({state_from}, {symbol}) maps to {mapped_state}, not {state_to}. Cannot delete")
+            del self._transitions[(state_from, symbol)]
+        except KeyError:
+            pass
 
     def find_word(self, word: str) -> bool:
         if not word:
@@ -106,7 +105,7 @@ class BaseDAFSA:
         """Follows word up to preexisting prefix and returns remaining suffix"""
         if word:
             try:
-                self._current_state = self._current_state.apply(word[0])
+                self._current_state = self.apply(self._current_state, word[0])
                 return self._follow(word[1:])
             except KeyError:
                 return word
@@ -115,8 +114,8 @@ class BaseDAFSA:
     def _finish(self, suffix: str):
         """Adds remaining suffix to dafsa"""
         for c in suffix:
-            new_state = BaseDAFSA._State.new()
-            self._current_state.add_transition(self._current_state, c, new_state)
+            new_state = BaseDAFSA._State()
+            self.add_transition(self._current_state, c, new_state)
             self._current_state.children.append(c)
             self._current_state = new_state
 
