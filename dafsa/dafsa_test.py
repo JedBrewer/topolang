@@ -2,9 +2,11 @@ import unittest
 
 from .dafsa import BaseDAFSA
 
+word_test_file = "words_test.txt"
+
 
 class TestDAFSAMethods(unittest.TestCase):
-    def test_init(self):
+    def test_addfind(self):
         words = ["car", "carp", "carton", "carbide", "cartoon", "cat", "dad", "house"]
 
         d = BaseDAFSA()
@@ -18,6 +20,22 @@ class TestDAFSAMethods(unittest.TestCase):
         self.assertEquals(d.find_word(""), False)
         with self.assertRaises(ValueError):
             d.add_word("")
+
+    def test_load(self):
+        l = []
+
+        with open(word_test_file, "r") as file:
+            for w in file.readlines():
+                l.append(w.strip('\n'))
+
+        d = BaseDAFSA()
+        d.load(word_test_file)
+
+        for w in l:
+            self.assertEquals(d.find_word(w), True)
+
+        for w in l:
+            self.assertEquals(d.find_word(w + "notword"), False)
 
 
 if __name__ == '__main__':

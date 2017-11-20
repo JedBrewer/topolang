@@ -1,6 +1,5 @@
 # Default implementation of DAFSA. Will abstract later
 
-# TODO: add BaseDAFSA.load method to construct a basic trie DAFSA
 # TODO: add BaseDAFSA.minimize method to reduce an existing DAFSA to its minimal equivalent
 
 # TODO: add BaseDAFSA.add_word_incr to maintain minimal DAFSA
@@ -20,7 +19,7 @@ class BaseDAFSA:
             return BaseDAFSA._State._transitions[(self, symbol)]
 
         @classmethod
-        def new(cls) -> BaseDAFSA._State:
+        def new(cls):
             new_state = cls.__new__(cls)
             new_state.__init__()
             return new_state
@@ -46,6 +45,11 @@ class BaseDAFSA:
 
         word = self._follow(word)
         self._finish(word)
+
+    def load(self, filename):
+        with open(filename, "r") as file:
+            for line in file.readlines():
+                self.add_word(line.strip('\n'))
 
     def find_word(self, word: str):
         if not word:
