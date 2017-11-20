@@ -52,7 +52,7 @@ class BaseDAFSA:
         word = self._follow(word)
         self._finish(word)
 
-    def load(self, filename):
+    def load(self, filename: str):
         with open(filename, "r") as file:
             for line in file.readlines():
                 self.add_word(line.strip('\n'))
@@ -73,7 +73,7 @@ class BaseDAFSA:
             else:
                 self._register.append(p)
 
-    def find_word(self, word: str):
+    def find_word(self, word: str) -> bool:
         if not word:
             return False
 
@@ -91,7 +91,7 @@ class BaseDAFSA:
         if not (word.isalpha() and word.islower()):
             raise ValueError("can only accept lower-case letters")
 
-    def _follow(self, word):
+    def _follow(self, word: str) -> str:
         """Follows word up to preexisting prefix and returns remaining suffix"""
         if word:
             try:
@@ -101,7 +101,7 @@ class BaseDAFSA:
                 return word
 
     # Precondition: there are no more existing paths on this suffix
-    def _finish(self, suffix):
+    def _finish(self, suffix: str):
         """Adds remaining suffix to dafsa"""
         for c in suffix:
             new_state = BaseDAFSA._State.new()
@@ -111,5 +111,5 @@ class BaseDAFSA:
         self._current_state.is_final = True
 
     # TODO: Write BaseDAFSA._find_equivalent
-    def _find_equivalent(self, p):
+    def _find_equivalent(self, p: _State) -> _State:
         ...
