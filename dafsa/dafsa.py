@@ -1,7 +1,5 @@
 # Default implementation of DAFSA. Will abstract later
 
-# TODO: add BaseDAFSA.minimize method to reduce an existing DAFSA to its minimal equivalent
-
 # TODO: add BaseDAFSA.add_word_incr to maintain minimal DAFSA
 # TODO: add BaseDAFSA.load_incr method to use add_word to incrementally construct minimal DAFSA
 
@@ -14,6 +12,8 @@ class BaseDAFSA:
 
         def __init__(self):
             self.is_final = False
+            # TODO: Adjust code to keep track of BaseDAFSA._State.children
+            self.children = []
 
         def apply(self, symbol):
             return BaseDAFSA._State._transitions[(self, symbol)]
@@ -32,9 +32,15 @@ class BaseDAFSA:
 
             BaseDAFSA._State._transitions[(state_from, symbol)] = state_to
 
+        # TODO: Write BaseDAFSA._find_equivalent
+        @staticmethod
+        def remove_transition(state_from, symbol, state_to):
+            ...
+
     def __init__(self):
         self._initial_state = BaseDAFSA._State.new()
         self._current_state = self._initial_state
+        self._register = []
 
     def add_word(self, word: str):
         if not word:
@@ -50,6 +56,22 @@ class BaseDAFSA:
         with open(filename, "r") as file:
             for line in file.readlines():
                 self.add_word(line.strip('\n'))
+
+    def minimize(self):
+        self._minimize(self._initial_state)
+
+    def _minimize(self, state: _State):
+        for c in state.children:
+            p = state.apply(c)
+
+            self._minimize(p)
+            q = self._find_equivalent(p)
+
+            if q:
+                state.remove_transition(state, c, p)
+                state.add_transition(state, c, q)
+            else:
+                self._register.append(p)
 
     def find_word(self, word: str):
         if not word:
@@ -87,3 +109,7 @@ class BaseDAFSA:
             self._current_state = new_state
 
         self._current_state.is_final = True
+
+    # TODO: Write BaseDAFSA._find_equivalent
+    def _find_equivalent(self, p):
+        ...
